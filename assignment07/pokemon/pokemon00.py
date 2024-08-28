@@ -1,6 +1,5 @@
 import aiofiles
 import asyncio 
-import json
 
 pokemonapi_directory = './assignment07/pokemon/pokemonapi'
 pokemonmove_directory = './assignment07/pokemon/pokemonmove'

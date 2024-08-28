@@ -27,7 +27,7 @@ async def get_pokemons():
             rand_list.append(random.randint(1, 151))
 
         for number in rand_list:
-            url = f'https://pokeapi.co/api/v2/pokemon/{number}'
+            url = f'https://pokeapi.co/api/v2/ability/battle-armor/{number}'
             tasks.append(asyncio.create_task(get_pokemon(client, url)))
 
         pokemons = await asyncio.gather(*tasks) 
