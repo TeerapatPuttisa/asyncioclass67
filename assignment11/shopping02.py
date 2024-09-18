@@ -1,30 +1,45 @@
 import time
 import asyncio
 from asyncio import Queue
+from random import randrange
 
-# Product class with checkout time
+# we first implement the Customer and Product classes, 
+# representing customers and products that need to be checked out. 
+# The Product class has a checkout_time attribute, 
+# which represents the time required for checking out the product.
 class Product:
     def __init__(self, product_name: str, checkout_time: float):
         self.product_name = product_name
         self.checkout_time = checkout_time
 
-# Customer class with a list of products
+
 class Customer:
     def __init__(self, customer_id: int, products: list[Product]):
         self.customer_id = customer_id
         self.products = products
 
-# Checkout customer method that simulates checkout process
+
+# we implement a checkout_customer method that acts as a consumer.
+# As long as there is data in the queue, this method will continue to loop. 
+# During each iteration, it uses a get method to retrieve a Customer instance. 
+# 
+# If there is no data in the queue, it will wait. 
+# 
+# After retrieving a piece of data (in this case, a Customer instance), 
+# it iterates through the products attribute and uses asyncio.sleep to simulate the checkout process.
+# 
+# After finishing processing the data, 
+# we use queue.task_done() to tell the queue that the data has been successfully processed.
 async def checkout_customer(queue: Queue, cashier_number: int):
-    cashier_take = {"id": cashier_number, "time": 0, "customer": 0}
+    cashier_take = {"id": cashier_number, "time" : 0, "customer": 0 }
     while not queue.empty():
         customer: Customer = await queue.get()
-        cashier_take['customer'] += 1
+        cashier_take ['customer'] += 1
         print(f"The Cashier_{cashier_number} "
               f"will checkout Customer_{customer.customer_id}")
-        
+        await asyncio.sleep(0.001)
         for product in customer.products:
-            product_take_time = round(product.checkout_time, ndigits=2)
+            product_take_time = round(product.checkout_time,ndigits=2)
             print(f"The Cashier_{cashier_number} "
                   f"will checkout Customer_{customer.customer_id}'s "
                   f"Product_{product.product_name} "
@@ -34,21 +49,25 @@ async def checkout_customer(queue: Queue, cashier_number: int):
         
         print(f"The Cashier_{cashier_number} "
               f"finished checkout Customer_{customer.customer_id} "
-              f"in {round(cashier_take['time'], ndigits=2)} secs")
+              f"in {round(cashier_take ['time'], ndigits=2)} secs")
         
         queue.task_done()
     return cashier_take
 
-# Generate customers with adjusted product times
+# we implement the generate_customer method as a factory method for producing customers.
+#
+# We first define a product series and the required checkout time for each product. 
+# Then, we place 0 to 4 products in each customer’s shopping cart.
 def generate_customer(customer_id: int) -> Customer:
-    # Adjusting checkout times to hit close to 8.02 seconds
-    all_products = [Product('beef', 1.1),   # Changed from 1 to 1.1
-                    Product('banana', .45), # Changed from 0.4 to 0.45
-                    Product('sausage', .45),# Changed from 0.4 to 0.45
-                    Product('diapers', .2)] # Kept the same
+    all_products = [Product('beef', 1),
+                    Product('banana', .4),
+                    Product('sausage', .4),
+                    Product('diapers', .2)]
     return Customer(customer_id, all_products)
 
-# Customer generation method
+# we implement the customer_generation method as a producer. 
+# This method generates several customer instances regularly 
+# and puts them in the queue. If the queue is full, the put method will wait.
 async def customer_generation(queue: Queue, customers: int):
     customer_count = 0
     while True:
@@ -64,7 +83,9 @@ async def customer_generation(queue: Queue, customers: int):
         await asyncio.sleep(0.001)
         return customer_count
 
-# Main method
+
+# Finally, we use the main method to initialize the queue, 
+# producer, and consumer, and start all concurrent tasks.
 async def main():
     customer_queue = Queue(3)
     customers_start_time = time.perf_counter()
@@ -81,7 +102,7 @@ async def main():
 
     print(f"The supermarket process finished "
           f"{customer_producer.result()} customers "
-          f"in {round(time.perf_counter() - customers_start_time, ndigits=2)} secs")
+                f"in {round(time.perf_counter() - customers_start_time, ndigits=2)} secs")
 
 if __name__ == "__main__":
     asyncio.run(main())
