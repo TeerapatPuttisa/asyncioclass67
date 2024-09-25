@@ -6,6 +6,7 @@ from random import randrange
 # we first implement the Customer and Product classes, 
 # representing customers and products that need to be checked out. 
 # The Product class has a checkout_time attribute, 
+3.
 # which represents the time required for checking out the product.
 class Product:
     def __init__(self, product_name: str, checkout_time: float):
